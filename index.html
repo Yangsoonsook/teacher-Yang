@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>우리 반 관계도</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; touch-action: none; -webkit-user-select: none; user-select: none; overflow: hidden; }
+  #app { display: flex; flex-direction: column; height: 100vh; padding: 14px 14px 80px; gap: 10px; }
+  header { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  header h1 { font-size: 17px; font-weight: 700; color: #0f172a; }
+  header p  { font-size: 11px; color: #6366f1; margin-top: 2px; font-style: italic; }
+  .selects { display: flex; gap: 6px; }
+  select {
+    appearance: none; -webkit-appearance: none;
+    background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2394a3b8' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E") no-repeat right 10px center;
+    border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 7px 28px 7px 11px; font-size: 14px; color: #1e293b; cursor: pointer; outline: none;
+  }
+  select:focus { border-color: #818cf8; }
+  .canvases { flex: 1; display: grid; gap: 10px; overflow: hidden; }
+  .cv-block { display: flex; flex-direction: column; gap: 5px; min-height: 0; }
+  .cv-label { font-size: 12px; font-weight: 700; color: #64748b; flex-shrink: 0; }
+  canvas { background: white; border-radius: 14px; border: 1px solid #e2e8f0; display: block; touch-action: none; flex: 1; width: 100%; }
+  .fab { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.93); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.9); border-radius: 999px; padding: 9px 24px; display: flex; align-items: center; gap: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); z-index: 30; white-space: nowrap; }
+  .btn-reset { background: none; border: none; font-size: 14px; color: #94a3b8; cursor: pointer; padding: 4px; }
+  .btn-done  { background: #4f46e5; color: white; border: none; border-radius: 999px; padding: 9px 26px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .btn-done:active { opacity: 0.85; }
+  .overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.45); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+  .modal { background: white; width: 100%; max-width: 460px; border-radius: 22px; padding: 22px; max-height: 90vh; overflow-y: auto; }
+  .modal h2 { font-size: 16px; font-weight: 700; text-align: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 13px; margin-bottom: 16px; color: #0f172a; }
+  .q-block { display: flex; flex-direction: column; gap: 14px; }
+  .q-label { font-size: 13px; font-weight: 600; color: #475569; display: block; margin-bottom: 5px; }
+  .q-input { width: 100%; border: none; border-bottom: 1px solid #e2e8f0; padding: 5px 0; font-size: 14px; color: #1e293b; outline: none; background: none; font-family: inherit; }
+  .q-input:focus { border-bottom-color: #6366f1; }
+  .q-textarea { width: 100%; border: 1px solid #e2e8f0; border-radius: 10px; padding: 9px 11px; height: 76px; background: #f8fafc; font-size: 14px; color: #1e293b; outline: none; resize: none; font-family: inherit; margin-top: 5px; }
+  .q-textarea:focus { border-color: #818cf8; }
+  .modal-btns { display: flex; gap: 10px; margin-top: 18px; }
+  .btn-cancel { flex: 1; padding: 11px; background: #f1f5f9; border: none; border-radius: 11px; font-size: 15px; font-weight: 700; color: #475569; cursor: pointer; }
+  .btn-submit { flex: 1; padding: 11px; background: #4f46e5; border: none; border-radius: 11px; font-size: 15px; font-weight: 700; color: white; cursor: pointer; }
+  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+  .hidden { display: none !important; }
+  @media (min-width: 640px) {
+    .canvases { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header>
+    <div>
+      <h1>우리 반 관계도</h1>
+      <p>회색 점이 '나'입니다. 빈 곳을 터치하면 친구가 추가됩니다.</p>
+    </div>
+    <div class="selects">
+      <select id="selGrade">
+        <option value="1">1학년</option>
+        <option value="2" selected>2학년</option>
+        <option value="3">3학년</option>
+      </select>
+      <select id="selClass">
+        <option value="1" selected>1반</option>
+        <option value="2">2반</option>
+        <option value="3">3반</option>
+        <option value="4">4반</option>
+        <option value="5">5반</option>
+        <option value="6">6반</option>
+        <option value="7">7반</option>
+        <option value="8">8반</option>
+        <option value="9">9반</option>
+        <option value="10">10반</option>
+      </select>
+    </div>
+  </header>
+
+  <div class="canvases">
+    <div class="cv-block">
+      <span class="cv-label">1. 지금 우리 반의 모습</span>
+      <canvas id="cvNow"></canvas>
+    </div>
+    <div class="cv-block">
+      <span class="cv-label">2. 내가 바라는 우리 반</span>
+      <canvas id="cvWish"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="fab">
+  <button class="btn-reset" id="btnReset">초기화</button>
+  <button class="btn-done"  id="btnDone">작성 완료 →</button>
+</div>
+
+<div class="overlay hidden" id="overlay">
+  <div class="modal">
+    <h2>상담 질문지</h2>
+    <div class="q-block">
+      <div>
+        <label class="q-label">1. 모둠 활동을 함께하고 싶은 친구</label>
+        <input class="q-input" id="q1" type="text" autocomplete="off">
+      </div>
+      <div>
+        <label class="q-label">2. 고민을 나눌 수 있는 친구</label>
+        <input class="q-input" id="q2" type="text" autocomplete="off">
+      </div>
+      <div>
+        <label class="q-label">3. 조금 서먹하거나 힘든 친구 (선택)</label>
+        <input class="q-input" id="q3" type="text" autocomplete="off">
+      </div>
+      <div>
+        <label class="q-label">4. 선생님께 전하고 싶은 비밀 메시지 (선택)</label>
+        <textarea class="q-textarea" id="qNote"></textarea>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" id="btnCancel">수정하기</button>
+      <button class="btn-submit" id="btnSubmit">제출하기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ━━ GAS URL — 여기만 교체하세요 ━━━━━━━━━━━━━━━ */
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxKdPd7uc0KqAOLi0nLAIKwXeP_1wvyvs3RbSkM2_x82cRuykmV6gInb3WoYeTVnrIKmQ/exec";
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+const cvNow  = document.getElementById("cvNow");
+const cvWish = document.getElementById("cvWish");
+const ctxNow  = cvNow.getContext("2d");
+const ctxWish = cvWish.getContext("2d");
+const overlay = document.getElementById("overlay");
+
+const state = {
+  now:  { nodes: [], color: "#6366f1" },
+  wish: { nodes: [], color: "#10b981" }
+};
+
+/* 캔버스 크기 → DPR 적용 */
+function resizeCanvases() {
+  [cvNow, cvWish].forEach(cv => {
+    const r = cv.getBoundingClientRect();
+    cv.width  = Math.floor(r.width  * devicePixelRatio);
+    cv.height = Math.floor(r.height * devicePixelRatio);
+  });
+  drawAll();
+}
+
+/* 그리기 */
+function drawCanvas(cv, ctx, nodes, color) {
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  const d  = devicePixelRatio;
+  const cx = cv.width  / 2;
+  const cy = cv.height / 2;
+  /* 나 */
+  ctx.beginPath();
+  ctx.arc(cx, cy, 9 * d, 0, Math.PI * 2);
+  ctx.fillStyle = "#cbd5e1";
+  ctx.fill();
+  /* 친구들 */
+  nodes.forEach(n => {
+    ctx.beginPath();
+    ctx.arc(n.x * d, n.y * d, 20 * d, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  });
+}
+
+function drawAll() {
+  drawCanvas(cvNow,  ctxNow,  state.now.nodes,  state.now.color);
+  drawCanvas(cvWish, ctxWish, state.wish.nodes, state.wish.color);
+}
+
+/* 터치·마우스 이벤트 */
+function setupCanvas(cv, key) {
+  let dragging = null;
+
+  function pos(e) {
+    const r   = cv.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: src.clientX - r.left, y: src.clientY - r.top };
+  }
+
+  function hit(p) {
+    return state[key].nodes.findIndex(n => {
+      const dx = n.x - p.x, dy = n.y - p.y;
+      return Math.sqrt(dx * dx + dy * dy) <= 24;
+    });
+  }
+
+  cv.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    const p = pos(e);
+    const i = hit(p);
+    if (i !== -1) { dragging = i; }
+    else { state[key].nodes.push(p); drawAll(); }
+  });
+
+  cv.addEventListener("pointermove", e => {
+    e.preventDefault();
+    if (dragging === null) return;
+    state[key].nodes[dragging] = pos(e);
+    drawAll();
+  });
+
+  cv.addEventListener("pointerup",     () => { dragging = null; });
+  cv.addEventListener("pointercancel", () => { dragging = null; });
+}
+
+setupCanvas(cvNow,  "now");
+setupCanvas(cvWish, "wish");
+
+/* 리사이즈 감지 */
+new ResizeObserver(resizeCanvases).observe(document.getElementById("app"));
+resizeCanvases();
+
+/* 초기화 */
+document.getElementById("btnReset").addEventListener("click", () => {
+  state.now.nodes = []; state.wish.nodes = [];
+  drawAll();
+});
+
+/* 모달 */
+document.getElementById("btnDone").addEventListener("click",   () => overlay.classList.remove("hidden"));
+document.getElementById("btnCancel").addEventListener("click", () => overlay.classList.add("hidden"));
+
+/* 제출 */
+document.getElementById("btnSubmit").addEventListener("click", async () => {
+  const btn = document.getElementById("btnSubmit");
+  btn.disabled = true;
+  btn.textContent = "전송 중...";
+  try {
+    await fetch(GAS_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        info:      document.getElementById("selGrade").value + "학년 " +
+                   document.getElementById("selClass").value + "반",
+        nowImage:  cvNow.toDataURL("image/png"),
+        wishImage: cvWish.toDataURL("image/png"),
+        answers: {
+          q1:   document.getElementById("q1").value,
+          q2:   document.getElementById("q2").value,
+          q3:   document.getElementById("q3").value,
+          note: document.getElementById("qNote").value
+        },
+        submittedAt: new Date().toLocaleString("ko-KR")
+      })
+    });
+    alert("제출되었습니다. 소중한 의견 고마워요!");
+    overlay.classList.add("hidden");
+    state.now.nodes = []; state.wish.nodes = [];
+    drawAll();
+    ["q1","q2","q3","qNote"].forEach(id => {
+      document.getElementById(id).value = "";
+    });
+  } catch {
+    alert("전송 오류가 발생했습니다. 다시 시도해 주세요.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "제출하기";
+  }
+});
+</script>
+</body>
+</html>
