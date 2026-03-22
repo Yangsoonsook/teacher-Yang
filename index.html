@@ -1,349 +1,133 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>우리 반 관계도</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; background: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; touch-action: none; -webkit-user-select: none; user-select: none; overflow: hidden; }
-  #app { display: flex; flex-direction: column; height: 100vh; padding: 14px 14px 80px; gap: 8px; }
-  header { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-  header h1 { font-size: 17px; font-weight: 700; color: #0f172a; }
-  header p  { font-size: 11px; color: #6366f1; margin-top: 2px; font-style: italic; }
-  .selects { display: flex; gap: 6px; }
-  select { appearance: none; -webkit-appearance: none; background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2394a3b8' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E") no-repeat right 10px center; border: 1px solid #e2e8f0; border-radius: 10px; padding: 7px 28px 7px 11px; font-size: 14px; color: #1e293b; cursor: pointer; outline: none; }
-  select:focus { border-color: #818cf8; }
-  .canvases { flex: 1; display: grid; gap: 10px; overflow: hidden; }
-  .cv-block { display: flex; flex-direction: column; gap: 4px; min-height: 0; }
-  .cv-label { font-size: 12px; font-weight: 700; color: #64748b; flex-shrink: 0; }
-  .toolbar { display: flex; gap: 5px; flex-shrink: 0; flex-wrap: wrap; align-items: center; }
-  .tool-btn { font-size: 12px; color: #64748b; background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 4px 10px; cursor: pointer; touch-action: manipulation; }
-  .tool-btn.active-now  { border-color: #6366f1; background: #eef2ff; color: #4338ca; font-weight: 700; }
-  .tool-btn.active-wish { border-color: #10b981; background: #d1fae5; color: #065f46; font-weight: 700; }
-  .color-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; flex-shrink: 0; touch-action: manipulation; }
-  .color-dot.active { border-color: #334155; }
-  canvas { background: white; border-radius: 14px; border: 1px solid #e2e8f0; display: block; touch-action: none; flex: 1; width: 100%; }
-  .fab { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.93); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.9); border-radius: 999px; padding: 9px 24px; display: flex; align-items: center; gap: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); z-index: 30; white-space: nowrap; }
-  .btn-reset { background: none; border: none; font-size: 14px; color: #94a3b8; cursor: pointer; padding: 4px; }
-  .btn-done  { background: #4f46e5; color: white; border: none; border-radius: 999px; padding: 9px 26px; font-size: 15px; font-weight: 700; cursor: pointer; }
-  .btn-done:active { opacity: 0.85; }
-  .overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.45); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
-  .modal { background: white; width: 100%; max-width: 460px; border-radius: 22px; padding: 22px; max-height: 90vh; overflow-y: auto; }
-  .modal h2 { font-size: 16px; font-weight: 700; text-align: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 13px; margin-bottom: 16px; color: #0f172a; }
-  .q-block { display: flex; flex-direction: column; gap: 14px; }
-  .q-label { font-size: 13px; font-weight: 600; color: #475569; display: block; margin-bottom: 5px; }
-  .q-input { width: 100%; border: none; border-bottom: 1px solid #e2e8f0; padding: 5px 0; font-size: 14px; color: #1e293b; outline: none; background: none; font-family: inherit; }
-  .q-input:focus { border-bottom-color: #6366f1; }
-  .q-textarea { width: 100%; border: 1px solid #e2e8f0; border-radius: 10px; padding: 9px 11px; height: 76px; background: #f8fafc; font-size: 14px; color: #1e293b; outline: none; resize: none; font-family: inherit; margin-top: 5px; }
-  .q-textarea:focus { border-color: #818cf8; }
-  .modal-btns { display: flex; gap: 10px; margin-top: 18px; }
-  .btn-cancel { flex: 1; padding: 11px; background: #f1f5f9; border: none; border-radius: 11px; font-size: 15px; font-weight: 700; color: #475569; cursor: pointer; }
-  .btn-submit { flex: 1; padding: 11px; background: #4f46e5; border: none; border-radius: 11px; font-size: 15px; font-weight: 700; color: white; cursor: pointer; }
-  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-  .hidden { display: none !important; }
-  @media (min-width: 640px) { .canvases { grid-template-columns: 1fr 1fr; } }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2-1 관계도 그리기</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/konva@9/konva.min.js"></script>
+    <script src="https://unpkg.com/react-konva@18/umd/react-konva.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #f8fafc; touch-action: none; -webkit-user-select: none; font-family: 'Pretendard', sans-serif; }
+        .canvas-card { background: white; border-radius: 1.5rem; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .modal-overlay { background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); }
+    </style>
 </head>
 <body>
-<div id="app">
-  <header>
-    <div>
-      <h1>우리 반 관계도</h1>
-      <p>도구를 선택하고 캔버스에 그려보세요.</p>
-    </div>
-    <div class="selects">
-      <select id="selGrade">
-        <option value="1">1학년</option>
-        <option value="2" selected>2학년</option>
-        <option value="3">3학년</option>
-      </select>
-      <select id="selClass">
-        <option value="1" selected>1반</option>
-        <option value="2">2반</option>
-        <option value="3">3반</option>
-        <option value="4">4반</option>
-        <option value="5">5반</option>
-        <option value="6">6반</option>
-        <option value="7">7반</option>
-        <option value="8">8반</option>
-        <option value="9">9반</option>
-        <option value="10">10반</option>
-      </select>
-    </div>
-  </header>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useRef } = React;
+        const { Stage, Layer, Circle, Text } = ReactKonva;
 
-  <div class="canvases">
-    <!-- 지금 우리 반 -->
-    <div class="cv-block">
-      <span class="cv-label">1. 지금 우리 반의 모습</span>
-      <div class="toolbar" id="tb-now">
-        <button class="tool-btn active-now" data-cv="now" data-tool="pen">펜</button>
-        <button class="tool-btn" data-cv="now" data-tool="circle">원</button>
-        <button class="tool-btn" data-cv="now" data-tool="line">선</button>
-        <button class="tool-btn" data-cv="now" data-tool="eraser">지우기</button>
-        <div style="width:1px;height:18px;background:#e2e8f0;margin:0 2px;"></div>
-        <div class="color-dot active" data-cv="now" data-color="#334155" style="background:#334155;"></div>
-        <div class="color-dot" data-cv="now" data-color="#6366f1" style="background:#6366f1;"></div>
-        <div class="color-dot" data-cv="now" data-color="#ef4444" style="background:#ef4444;"></div>
-        <div class="color-dot" data-cv="now" data-color="#f59e0b" style="background:#f59e0b;"></div>
-      </div>
-      <canvas id="cvNow"></canvas>
-    </div>
-    <!-- 바라는 우리 반 -->
-    <div class="cv-block">
-      <span class="cv-label">2. 내가 바라는 우리 반</span>
-      <div class="toolbar" id="tb-wish">
-        <button class="tool-btn active-wish" data-cv="wish" data-tool="pen">펜</button>
-        <button class="tool-btn" data-cv="wish" data-tool="circle">원</button>
-        <button class="tool-btn" data-cv="wish" data-tool="line">선</button>
-        <button class="tool-btn" data-cv="wish" data-tool="eraser">지우기</button>
-        <div style="width:1px;height:18px;background:#e2e8f0;margin:0 2px;"></div>
-        <div class="color-dot active" data-cv="wish" data-color="#334155" style="background:#334155;"></div>
-        <div class="color-dot" data-cv="wish" data-color="#10b981" style="background:#10b981;"></div>
-        <div class="color-dot" data-cv="wish" data-color="#3b82f6" style="background:#3b82f6;"></div>
-        <div class="color-dot" data-cv="wish" data-color="#f59e0b" style="background:#f59e0b;"></div>
-      </div>
-      <canvas id="cvWish"></canvas>
-    </div>
-  </div>
-</div>
+        const App = () => {
+            const [nowNodes, setNowNodes] = useState([]);
+            const [wishNodes, setWishNodes] = useState([]);
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [studentNum, setStudentNum] = useState("");
+            const [studentName, setStudentName] = useState("");
+            const [answers, setAnswers] = useState({ q1: "", q2: "", q3: "", note: "" });
+            
+            const nowRef = useRef(null);
+            const wishRef = useRef(null);
 
-<div class="fab">
-  <button class="btn-reset" id="btnReset">초기화</button>
-  <button class="btn-done"  id="btnDone">작성 완료 →</button>
-</div>
+            const addNode = (e, set, list) => {
+                if (e.target === e.target.getStage()) {
+                    const pos = e.target.getStage().getPointerPosition();
+                    set([...list, { id: Date.now(), x: pos.x, y: pos.y }]);
+                }
+            };
 
-<div class="overlay hidden" id="overlay">
-  <div class="modal">
-    <h2>상담 질문지</h2>
-    <div class="q-block">
-      <div>
-        <label class="q-label">1. 모둠 활동을 함께하고 싶은 친구</label>
-        <input class="q-input" id="q1" type="text" autocomplete="off">
-      </div>
-      <div>
-        <label class="q-label">2. 고민을 나눌 수 있는 친구</label>
-        <input class="q-input" id="q2" type="text" autocomplete="off">
-      </div>
-      <div>
-        <label class="q-label">3. 조금 서먹하거나 힘든 친구 (선택)</label>
-        <input class="q-input" id="q3" type="text" autocomplete="off">
-      </div>
-      <div>
-        <label class="q-label">4. 선생님께 전하고 싶은 비밀 메시지 (선택)</label>
-        <textarea class="q-textarea" id="qNote"></textarea>
-      </div>
-    </div>
-    <div class="modal-btns">
-      <button class="btn-cancel" id="btnCancel">수정하기</button>
-      <button class="btn-submit" id="btnSubmit">제출하기</button>
-    </div>
-  </div>
-</div>
+            const submit = async () => {
+                if (!studentNum || !studentName) return alert("번호와 이름을 적어주세요!");
+                
+                const payload = {
+                    info: "2-1",
+                    studentId: `${studentNum}_${studentName}`,
+                    nowImg: nowRef.current.toDataURL(),
+                    wishImg: wishRef.current.toDataURL(),
+                    answers: answers
+                };
 
-<script>
-/* ━━ GAS URL — 여기만 교체하세요 ━━━━━━━━━━━━━ */
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxjLPRPH1urMAh11WODu_Ge8zrSVujkxPilSR2tprTyQSsGvOnb3yyzmAg5haBCm2Pgcw/exec";
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+                try {
+                    // ★ 중요: 배포 후 받은 실제 URL로 교체하세요.
+                    const URL = "https://script.google.com/macros/s/AKfycbxjLPRPH1urMAh11WODu_Ge8zrSVujkxPilSR2tprTyQSsGvOnb3yyzmAg5haBCm2Pgcw/exec"; 
+                    await fetch(URL, { method: 'POST', body: JSON.stringify(payload) });
+                    alert("성공적으로 제출되었습니다!");
+                    setIsModalOpen(false);
+                } catch (e) {
+                    alert("서버 연결에 실패했습니다. (CORS 또는 URL 확인 필요)");
+                }
+            };
 
-const cvNow   = document.getElementById("cvNow");
-const cvWish  = document.getElementById("cvWish");
-const ctxNow  = cvNow.getContext("2d");
-const ctxWish = cvWish.getContext("2d");
-const overlay = document.getElementById("overlay");
+            const CanvasSection = ({title, color, nodes, setNodes, stageRef}) => (
+                <div className="flex flex-col flex-1 min-h-[300px]">
+                    <h3 className={`font-bold mb-2 ml-2 ${color}`}>{title}</h3>
+                    <div className="flex-1 canvas-card overflow-hidden bg-slate-50">
+                        <Stage 
+                            width={window.innerWidth > 768 ? (window.innerWidth/2 - 40) : (window.innerWidth - 40)} 
+                            height={window.innerHeight - 350} 
+                            onClick={(e) => addNode(e, setNodes, nodes)}
+                            ref={stageRef}
+                        >
+                            <Layer>
+                                <Circle x={(window.innerWidth > 768 ? window.innerWidth/4 : window.innerWidth/2) - 20} y={(window.innerHeight-350)/2} radius={8} fill="#94a3b8" />
+                                {nodes.map(n => <Circle key={n.id} x={n.x} y={n.y} radius={20} fill={color.includes('indigo') ? '#6366f1' : '#10b981'} draggable />)}
+                            </Layer>
+                        </Stage>
+                    </div>
+                </div>
+            );
 
-/* 캔버스별 상태 */
-const S = {
-  now:  { tool: "pen", color: "#334155", drawing: false, sx: 0, sy: 0, snap: null },
-  wish: { tool: "pen", color: "#334155", drawing: false, sx: 0, sy: 0, snap: null }
-};
+            return (
+                <div className="h-screen p-4 flex flex-col">
+                    <div className="flex justify-between items-center mb-4">
+                        <h1 className="text-xl font-bold">우리 반 관계도 <span className="text-indigo-600">(2-1)</span></h1>
+                        <div className="flex gap-2">
+                            <input placeholder="번호" className="w-16 p-2 border rounded-lg" onChange={e => setStudentNum(e.target.value)} />
+                            <input placeholder="이름" className="w-24 p-2 border rounded-lg" onChange={e => setStudentName(e.target.value)} />
+                        </div>
+                    </div>
 
-/* 캔버스 크기 초기화 */
-function resizeCanvas(cv, ctx) {
-  const snap = ctx.getImageData(0, 0, cv.width, cv.height);
-  const r = cv.getBoundingClientRect();
-  cv.width  = Math.floor(r.width  * devicePixelRatio);
-  cv.height = Math.floor(r.height * devicePixelRatio);
-  ctx.putImageData(snap, 0, 0);
-  drawCenter(cv, ctx);
-}
-function resizeAll() {
-  resizeCanvas(cvNow,  ctxNow);
-  resizeCanvas(cvWish, ctxWish);
-}
-function drawCenter(cv, ctx) {
-  /* 중앙 '나' 점 — 이미 그려진 내용 위에 덮어쓰지 않도록 별도 레이어 없이 표시만 */
-}
+                    <div className="flex-1 flex flex-col md:flex-row gap-4 mb-24">
+                        <CanvasSection title="[현재] 우리 반 모습" color="text-indigo-600" nodes={nowNodes} setNodes={setNowNodes} stageRef={nowRef} />
+                        <CanvasSection title="[미래] 바라는 모습" color="text-emerald-600" nodes={wishNodes} setNodes={setWishNodes} stageRef={wishRef} />
+                    </div>
 
-new ResizeObserver(resizeAll).observe(document.getElementById("app"));
-resizeAll();
+                    <button onClick={() => setIsModalOpen(true)} className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-12 py-4 rounded-full font-bold shadow-xl">작성 완료 및 답변하기</button>
 
-/* 좌표 변환 */
-function getPos(cv, e) {
-  const r   = cv.getBoundingClientRect();
-  const src = e.touches ? e.touches[0] : e;
-  return {
-    x: (src.clientX - r.left) * devicePixelRatio,
-    y: (src.clientY - r.top)  * devicePixelRatio
-  };
-}
-
-/* 캔버스 초기 '나' 표시 */
-function drawMe(cv, ctx) {
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(cv.width / 2, cv.height / 2, 9 * devicePixelRatio, 0, Math.PI * 2);
-  ctx.fillStyle = "#cbd5e1";
-  ctx.fill();
-  ctx.restore();
-}
-
-/* 각 캔버스 이벤트 설정 */
-function setupCanvas(cv, ctx, key) {
-  const activeClass = key === "now" ? "active-now" : "active-wish";
-
-  /* 처음 '나' 점 그리기 */
-  setTimeout(() => drawMe(cv, ctx), 100);
-
-  function onDown(e) {
-    e.preventDefault();
-    const s = S[key];
-    const p = getPos(cv, e);
-    s.drawing = true;
-    s.sx = p.x; s.sy = p.y;
-    ctx.strokeStyle = s.tool === "eraser" ? null : s.color;
-    ctx.lineWidth   = s.tool === "eraser" ? 20 * devicePixelRatio : 2 * devicePixelRatio;
-    ctx.lineCap     = "round";
-    ctx.lineJoin    = "round";
-    if (s.tool === "pen" || s.tool === "eraser") {
-      ctx.beginPath();
-      ctx.moveTo(p.x, p.y);
-      if (s.tool === "eraser") {
-        ctx.globalCompositeOperation = "destination-out";
-      } else {
-        ctx.globalCompositeOperation = "source-over";
-      }
-    } else {
-      /* 원·선: 시작점 스냅샷 저장 */
-      s.snap = ctx.getImageData(0, 0, cv.width, cv.height);
-      ctx.globalCompositeOperation = "source-over";
-    }
-  }
-
-  function onMove(e) {
-    e.preventDefault();
-    const s = S[key];
-    if (!s.drawing) return;
-    const p = getPos(cv, e);
-    if (s.tool === "pen" || s.tool === "eraser") {
-      ctx.lineTo(p.x, p.y);
-      ctx.stroke();
-    } else if (s.tool === "circle") {
-      ctx.putImageData(s.snap, 0, 0);
-      const rx = Math.abs(p.x - s.sx) / 2;
-      const ry = Math.abs(p.y - s.sy) / 2;
-      const cx = (s.sx + p.x) / 2;
-      const cy = (s.sy + p.y) / 2;
-      ctx.strokeStyle = s.color;
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, Math.max(rx, 4), Math.max(ry, 4), 0, 0, Math.PI * 2);
-      ctx.stroke();
-    } else if (s.tool === "line") {
-      ctx.putImageData(s.snap, 0, 0);
-      ctx.strokeStyle = s.color;
-      ctx.beginPath();
-      ctx.moveTo(s.sx, s.sy);
-      ctx.lineTo(p.x, p.y);
-      ctx.stroke();
-    }
-  }
-
-  function onUp(e) {
-    const s = S[key];
-    s.drawing = false;
-    ctx.globalCompositeOperation = "source-over";
-  }
-
-  cv.addEventListener("pointerdown",  onDown,  { passive: false });
-  cv.addEventListener("pointermove",  onMove,  { passive: false });
-  cv.addEventListener("pointerup",    onUp);
-  cv.addEventListener("pointercancel",onUp);
-
-  /* 도구 버튼 */
-  document.getElementById("tb-" + key).querySelectorAll(".tool-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      S[key].tool = btn.dataset.tool;
-      document.getElementById("tb-" + key).querySelectorAll(".tool-btn").forEach(b => {
-        b.classList.remove("active-now", "active-wish");
-      });
-      btn.classList.add(activeClass);
-    });
-  });
-
-  /* 색상 도트 */
-  document.getElementById("tb-" + key).querySelectorAll(".color-dot").forEach(dot => {
-    dot.addEventListener("click", () => {
-      S[key].color = dot.dataset.color;
-      document.getElementById("tb-" + key).querySelectorAll(".color-dot").forEach(d => d.classList.remove("active"));
-      dot.classList.add("active");
-    });
-  });
-}
-
-setupCanvas(cvNow,  ctxNow,  "now");
-setupCanvas(cvWish, ctxWish, "wish");
-
-/* 초기화 */
-document.getElementById("btnReset").addEventListener("click", () => {
-  ctxNow.clearRect(0, 0, cvNow.width, cvNow.height);
-  ctxWish.clearRect(0, 0, cvWish.width, cvWish.height);
-  drawMe(cvNow,  ctxNow);
-  drawMe(cvWish, ctxWish);
-});
-
-/* 모달 */
-document.getElementById("btnDone").addEventListener("click",   () => overlay.classList.remove("hidden"));
-document.getElementById("btnCancel").addEventListener("click", () => overlay.classList.add("hidden"));
-
-/* 제출 */
-document.getElementById("btnSubmit").addEventListener("click", async () => {
-  const btn = document.getElementById("btnSubmit");
-  btn.disabled = true;
-  btn.textContent = "전송 중...";
-  try {
-    await fetch(GAS_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({
-        info:      document.getElementById("selGrade").value + "학년 " +
-                   document.getElementById("selClass").value + "반",
-        nowImage:  cvNow.toDataURL("image/png"),
-        wishImage: cvWish.toDataURL("image/png"),
-        answers: {
-          q1:   document.getElementById("q1").value,
-          q2:   document.getElementById("q2").value,
-          q3:   document.getElementById("q3").value,
-          note: document.getElementById("qNote").value
-        },
-        submittedAt: new Date().toLocaleString("ko-KR")
-      })
-    });
-    alert("제출되었습니다. 소중한 의견 고마워요!");
-    overlay.classList.add("hidden");
-    ctxNow.clearRect(0, 0, cvNow.width, cvNow.height);
-    ctxWish.clearRect(0, 0, cvWish.width, cvWish.height);
-    drawMe(cvNow,  ctxNow);
-    drawMe(cvWish, ctxWish);
-    ["q1","q2","q3","qNote"].forEach(id => { document.getElementById(id).value = ""; });
-  } catch {
-    alert("전송 오류가 발생했습니다. 다시 시도해 주세요.");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "제출하기";
-  }
-});
-</script>
+                    {isModalOpen && (
+                        <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4">
+                            <div className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl overflow-y-auto max-h-[85vh]">
+                                <h2 className="text-xl font-bold mb-6">마음 나누기 질문지</h2>
+                                <div className="space-y-4">
+                                    {["모둠 활동을 함께하고 싶은 친구", "고민을 나눌 수 있는 친구", "조금 힘든 친구(비밀보장)"].map((q, i) => (
+                                        <div key={i}>
+                                            <label className="text-sm font-semibold text-slate-600">{i+1}. {q}</label>
+                                            <input type="text" className="w-full border-b-2 py-2 outline-none focus:border-indigo-500" onChange={e => {
+                                                const key = `q${i+1}`;
+                                                setAnswers({...answers, [key]: e.target.value});
+                                            }} />
+                                        </div>
+                                    ))}
+                                    <div>
+                                        <label className="text-sm font-semibold text-slate-600">4. 선생님께 하고 싶은 말</label>
+                                        <textarea className="w-full border rounded-xl p-3 h-20 bg-slate-50 mt-2" onChange={e => setAnswers({...answers, note: e.target.value})}></textarea>
+                                    </div>
+                                </div>
+                                <div className="flex gap-4 mt-8">
+                                    <button onClick={() => setIsModalOpen(false)} className="flex-1 py-4 bg-slate-100 rounded-2xl font-bold">수정</button>
+                                    <button onClick={submit} className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold">최종 제출</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
 </body>
 </html>
