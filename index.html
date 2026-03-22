@@ -7,21 +7,22 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; background: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; touch-action: none; -webkit-user-select: none; user-select: none; overflow: hidden; }
-  #app { display: flex; flex-direction: column; height: 100vh; padding: 14px 14px 80px; gap: 10px; }
+  #app { display: flex; flex-direction: column; height: 100vh; padding: 14px 14px 80px; gap: 8px; }
   header { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
   header h1 { font-size: 17px; font-weight: 700; color: #0f172a; }
   header p  { font-size: 11px; color: #6366f1; margin-top: 2px; font-style: italic; }
   .selects { display: flex; gap: 6px; }
-  select {
-    appearance: none; -webkit-appearance: none;
-    background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2394a3b8' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E") no-repeat right 10px center;
-    border: 1px solid #e2e8f0; border-radius: 10px;
-    padding: 7px 28px 7px 11px; font-size: 14px; color: #1e293b; cursor: pointer; outline: none;
-  }
+  select { appearance: none; -webkit-appearance: none; background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2394a3b8' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E") no-repeat right 10px center; border: 1px solid #e2e8f0; border-radius: 10px; padding: 7px 28px 7px 11px; font-size: 14px; color: #1e293b; cursor: pointer; outline: none; }
   select:focus { border-color: #818cf8; }
   .canvases { flex: 1; display: grid; gap: 10px; overflow: hidden; }
-  .cv-block { display: flex; flex-direction: column; gap: 5px; min-height: 0; }
+  .cv-block { display: flex; flex-direction: column; gap: 4px; min-height: 0; }
   .cv-label { font-size: 12px; font-weight: 700; color: #64748b; flex-shrink: 0; }
+  .toolbar { display: flex; gap: 5px; flex-shrink: 0; flex-wrap: wrap; align-items: center; }
+  .tool-btn { font-size: 12px; color: #64748b; background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 4px 10px; cursor: pointer; touch-action: manipulation; }
+  .tool-btn.active-now  { border-color: #6366f1; background: #eef2ff; color: #4338ca; font-weight: 700; }
+  .tool-btn.active-wish { border-color: #10b981; background: #d1fae5; color: #065f46; font-weight: 700; }
+  .color-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; flex-shrink: 0; touch-action: manipulation; }
+  .color-dot.active { border-color: #334155; }
   canvas { background: white; border-radius: 14px; border: 1px solid #e2e8f0; display: block; touch-action: none; flex: 1; width: 100%; }
   .fab { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.93); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.9); border-radius: 999px; padding: 9px 24px; display: flex; align-items: center; gap: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); z-index: 30; white-space: nowrap; }
   .btn-reset { background: none; border: none; font-size: 14px; color: #94a3b8; cursor: pointer; padding: 4px; }
@@ -41,18 +42,15 @@
   .btn-submit { flex: 1; padding: 11px; background: #4f46e5; border: none; border-radius: 11px; font-size: 15px; font-weight: 700; color: white; cursor: pointer; }
   .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
   .hidden { display: none !important; }
-  @media (min-width: 640px) {
-    .canvases { grid-template-columns: 1fr 1fr; }
-  }
+  @media (min-width: 640px) { .canvases { grid-template-columns: 1fr 1fr; } }
 </style>
 </head>
 <body>
-
 <div id="app">
   <header>
     <div>
       <h1>우리 반 관계도</h1>
-      <p>회색 점이 '나'입니다. 빈 곳을 터치하면 친구가 추가됩니다.</p>
+      <p>도구를 선택하고 캔버스에 그려보세요.</p>
     </div>
     <div class="selects">
       <select id="selGrade">
@@ -76,12 +74,36 @@
   </header>
 
   <div class="canvases">
+    <!-- 지금 우리 반 -->
     <div class="cv-block">
       <span class="cv-label">1. 지금 우리 반의 모습</span>
+      <div class="toolbar" id="tb-now">
+        <button class="tool-btn active-now" data-cv="now" data-tool="pen">펜</button>
+        <button class="tool-btn" data-cv="now" data-tool="circle">원</button>
+        <button class="tool-btn" data-cv="now" data-tool="line">선</button>
+        <button class="tool-btn" data-cv="now" data-tool="eraser">지우기</button>
+        <div style="width:1px;height:18px;background:#e2e8f0;margin:0 2px;"></div>
+        <div class="color-dot active" data-cv="now" data-color="#334155" style="background:#334155;"></div>
+        <div class="color-dot" data-cv="now" data-color="#6366f1" style="background:#6366f1;"></div>
+        <div class="color-dot" data-cv="now" data-color="#ef4444" style="background:#ef4444;"></div>
+        <div class="color-dot" data-cv="now" data-color="#f59e0b" style="background:#f59e0b;"></div>
+      </div>
       <canvas id="cvNow"></canvas>
     </div>
+    <!-- 바라는 우리 반 -->
     <div class="cv-block">
       <span class="cv-label">2. 내가 바라는 우리 반</span>
+      <div class="toolbar" id="tb-wish">
+        <button class="tool-btn active-wish" data-cv="wish" data-tool="pen">펜</button>
+        <button class="tool-btn" data-cv="wish" data-tool="circle">원</button>
+        <button class="tool-btn" data-cv="wish" data-tool="line">선</button>
+        <button class="tool-btn" data-cv="wish" data-tool="eraser">지우기</button>
+        <div style="width:1px;height:18px;background:#e2e8f0;margin:0 2px;"></div>
+        <div class="color-dot active" data-cv="wish" data-color="#334155" style="background:#334155;"></div>
+        <div class="color-dot" data-cv="wish" data-color="#10b981" style="background:#10b981;"></div>
+        <div class="color-dot" data-cv="wish" data-color="#3b82f6" style="background:#3b82f6;"></div>
+        <div class="color-dot" data-cv="wish" data-color="#f59e0b" style="background:#f59e0b;"></div>
+      </div>
       <canvas id="cvWish"></canvas>
     </div>
   </div>
@@ -121,103 +143,163 @@
 </div>
 
 <script>
-/* ━━ GAS URL — 여기만 교체하세요 ━━━━━━━━━━━━━━━ */
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxKdPd7uc0KqAOLi0nLAIKwXeP_1wvyvs3RbSkM2_x82cRuykmV6gInb3WoYeTVnrIKmQ/exec";
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ━━ GAS URL — 여기만 교체하세요 ━━━━━━━━━━━━━ */
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxMbZxcbB4QWw4OPNhXBtIodXiS4FNIXGlL5WbANnQdYpWLZ9ZcHZBXqCIRMqylyH5LRQ/exec";
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-const cvNow  = document.getElementById("cvNow");
-const cvWish = document.getElementById("cvWish");
+const cvNow   = document.getElementById("cvNow");
+const cvWish  = document.getElementById("cvWish");
 const ctxNow  = cvNow.getContext("2d");
 const ctxWish = cvWish.getContext("2d");
 const overlay = document.getElementById("overlay");
 
-const state = {
-  now:  { nodes: [], color: "#6366f1" },
-  wish: { nodes: [], color: "#10b981" }
+/* 캔버스별 상태 */
+const S = {
+  now:  { tool: "pen", color: "#334155", drawing: false, sx: 0, sy: 0, snap: null },
+  wish: { tool: "pen", color: "#334155", drawing: false, sx: 0, sy: 0, snap: null }
 };
 
-/* 캔버스 크기 → DPR 적용 */
-function resizeCanvases() {
-  [cvNow, cvWish].forEach(cv => {
-    const r = cv.getBoundingClientRect();
-    cv.width  = Math.floor(r.width  * devicePixelRatio);
-    cv.height = Math.floor(r.height * devicePixelRatio);
-  });
-  drawAll();
+/* 캔버스 크기 초기화 */
+function resizeCanvas(cv, ctx) {
+  const snap = ctx.getImageData(0, 0, cv.width, cv.height);
+  const r = cv.getBoundingClientRect();
+  cv.width  = Math.floor(r.width  * devicePixelRatio);
+  cv.height = Math.floor(r.height * devicePixelRatio);
+  ctx.putImageData(snap, 0, 0);
+  drawCenter(cv, ctx);
+}
+function resizeAll() {
+  resizeCanvas(cvNow,  ctxNow);
+  resizeCanvas(cvWish, ctxWish);
+}
+function drawCenter(cv, ctx) {
+  /* 중앙 '나' 점 — 이미 그려진 내용 위에 덮어쓰지 않도록 별도 레이어 없이 표시만 */
 }
 
-/* 그리기 */
-function drawCanvas(cv, ctx, nodes, color) {
-  ctx.clearRect(0, 0, cv.width, cv.height);
-  const d  = devicePixelRatio;
-  const cx = cv.width  / 2;
-  const cy = cv.height / 2;
-  /* 나 */
+new ResizeObserver(resizeAll).observe(document.getElementById("app"));
+resizeAll();
+
+/* 좌표 변환 */
+function getPos(cv, e) {
+  const r   = cv.getBoundingClientRect();
+  const src = e.touches ? e.touches[0] : e;
+  return {
+    x: (src.clientX - r.left) * devicePixelRatio,
+    y: (src.clientY - r.top)  * devicePixelRatio
+  };
+}
+
+/* 캔버스 초기 '나' 표시 */
+function drawMe(cv, ctx) {
+  ctx.save();
   ctx.beginPath();
-  ctx.arc(cx, cy, 9 * d, 0, Math.PI * 2);
+  ctx.arc(cv.width / 2, cv.height / 2, 9 * devicePixelRatio, 0, Math.PI * 2);
   ctx.fillStyle = "#cbd5e1";
   ctx.fill();
-  /* 친구들 */
-  nodes.forEach(n => {
-    ctx.beginPath();
-    ctx.arc(n.x * d, n.y * d, 20 * d, 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    ctx.fill();
-  });
+  ctx.restore();
 }
 
-function drawAll() {
-  drawCanvas(cvNow,  ctxNow,  state.now.nodes,  state.now.color);
-  drawCanvas(cvWish, ctxWish, state.wish.nodes, state.wish.color);
-}
+/* 각 캔버스 이벤트 설정 */
+function setupCanvas(cv, ctx, key) {
+  const activeClass = key === "now" ? "active-now" : "active-wish";
 
-/* 터치·마우스 이벤트 */
-function setupCanvas(cv, key) {
-  let dragging = null;
+  /* 처음 '나' 점 그리기 */
+  setTimeout(() => drawMe(cv, ctx), 100);
 
-  function pos(e) {
-    const r   = cv.getBoundingClientRect();
-    const src = e.touches ? e.touches[0] : e;
-    return { x: src.clientX - r.left, y: src.clientY - r.top };
+  function onDown(e) {
+    e.preventDefault();
+    const s = S[key];
+    const p = getPos(cv, e);
+    s.drawing = true;
+    s.sx = p.x; s.sy = p.y;
+    ctx.strokeStyle = s.tool === "eraser" ? null : s.color;
+    ctx.lineWidth   = s.tool === "eraser" ? 20 * devicePixelRatio : 2 * devicePixelRatio;
+    ctx.lineCap     = "round";
+    ctx.lineJoin    = "round";
+    if (s.tool === "pen" || s.tool === "eraser") {
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      if (s.tool === "eraser") {
+        ctx.globalCompositeOperation = "destination-out";
+      } else {
+        ctx.globalCompositeOperation = "source-over";
+      }
+    } else {
+      /* 원·선: 시작점 스냅샷 저장 */
+      s.snap = ctx.getImageData(0, 0, cv.width, cv.height);
+      ctx.globalCompositeOperation = "source-over";
+    }
   }
 
-  function hit(p) {
-    return state[key].nodes.findIndex(n => {
-      const dx = n.x - p.x, dy = n.y - p.y;
-      return Math.sqrt(dx * dx + dy * dy) <= 24;
+  function onMove(e) {
+    e.preventDefault();
+    const s = S[key];
+    if (!s.drawing) return;
+    const p = getPos(cv, e);
+    if (s.tool === "pen" || s.tool === "eraser") {
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    } else if (s.tool === "circle") {
+      ctx.putImageData(s.snap, 0, 0);
+      const rx = Math.abs(p.x - s.sx) / 2;
+      const ry = Math.abs(p.y - s.sy) / 2;
+      const cx = (s.sx + p.x) / 2;
+      const cy = (s.sy + p.y) / 2;
+      ctx.strokeStyle = s.color;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, Math.max(rx, 4), Math.max(ry, 4), 0, 0, Math.PI * 2);
+      ctx.stroke();
+    } else if (s.tool === "line") {
+      ctx.putImageData(s.snap, 0, 0);
+      ctx.strokeStyle = s.color;
+      ctx.beginPath();
+      ctx.moveTo(s.sx, s.sy);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    }
+  }
+
+  function onUp(e) {
+    const s = S[key];
+    s.drawing = false;
+    ctx.globalCompositeOperation = "source-over";
+  }
+
+  cv.addEventListener("pointerdown",  onDown,  { passive: false });
+  cv.addEventListener("pointermove",  onMove,  { passive: false });
+  cv.addEventListener("pointerup",    onUp);
+  cv.addEventListener("pointercancel",onUp);
+
+  /* 도구 버튼 */
+  document.getElementById("tb-" + key).querySelectorAll(".tool-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      S[key].tool = btn.dataset.tool;
+      document.getElementById("tb-" + key).querySelectorAll(".tool-btn").forEach(b => {
+        b.classList.remove("active-now", "active-wish");
+      });
+      btn.classList.add(activeClass);
     });
-  }
-
-  cv.addEventListener("pointerdown", e => {
-    e.preventDefault();
-    const p = pos(e);
-    const i = hit(p);
-    if (i !== -1) { dragging = i; }
-    else { state[key].nodes.push(p); drawAll(); }
   });
 
-  cv.addEventListener("pointermove", e => {
-    e.preventDefault();
-    if (dragging === null) return;
-    state[key].nodes[dragging] = pos(e);
-    drawAll();
+  /* 색상 도트 */
+  document.getElementById("tb-" + key).querySelectorAll(".color-dot").forEach(dot => {
+    dot.addEventListener("click", () => {
+      S[key].color = dot.dataset.color;
+      document.getElementById("tb-" + key).querySelectorAll(".color-dot").forEach(d => d.classList.remove("active"));
+      dot.classList.add("active");
+    });
   });
-
-  cv.addEventListener("pointerup",     () => { dragging = null; });
-  cv.addEventListener("pointercancel", () => { dragging = null; });
 }
 
-setupCanvas(cvNow,  "now");
-setupCanvas(cvWish, "wish");
-
-/* 리사이즈 감지 */
-new ResizeObserver(resizeCanvases).observe(document.getElementById("app"));
-resizeCanvases();
+setupCanvas(cvNow,  ctxNow,  "now");
+setupCanvas(cvWish, ctxWish, "wish");
 
 /* 초기화 */
 document.getElementById("btnReset").addEventListener("click", () => {
-  state.now.nodes = []; state.wish.nodes = [];
-  drawAll();
+  ctxNow.clearRect(0, 0, cvNow.width, cvNow.height);
+  ctxWish.clearRect(0, 0, cvWish.width, cvWish.height);
+  drawMe(cvNow,  ctxNow);
+  drawMe(cvWish, ctxWish);
 });
 
 /* 모달 */
@@ -249,11 +331,11 @@ document.getElementById("btnSubmit").addEventListener("click", async () => {
     });
     alert("제출되었습니다. 소중한 의견 고마워요!");
     overlay.classList.add("hidden");
-    state.now.nodes = []; state.wish.nodes = [];
-    drawAll();
-    ["q1","q2","q3","qNote"].forEach(id => {
-      document.getElementById(id).value = "";
-    });
+    ctxNow.clearRect(0, 0, cvNow.width, cvNow.height);
+    ctxWish.clearRect(0, 0, cvWish.width, cvWish.height);
+    drawMe(cvNow,  ctxNow);
+    drawMe(cvWish, ctxWish);
+    ["q1","q2","q3","qNote"].forEach(id => { document.getElementById(id).value = ""; });
   } catch {
     alert("전송 오류가 발생했습니다. 다시 시도해 주세요.");
   } finally {
