@@ -315,6 +315,7 @@ document.getElementById("btnSubmit").addEventListener("click", async () => {
     await fetch(GAS_URL, {
       method: "POST",
       mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
       body: JSON.stringify({
         info:      document.getElementById("selGrade").value + "학년 " +
                    document.getElementById("selClass").value + "반",
